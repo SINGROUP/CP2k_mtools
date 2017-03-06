@@ -1,0 +1,191 @@
+# -*- coding: utf-8 -*-
+
+from pycp2k.cp2k import CP2K
+from cp2k_restart_calc import CP2K_restart
+from cp2k_input_tools import set_poisson_solver, set_fixed_atoms_ASE
+
+# Parameter files
+from cp2k_common_params import set_common_params_diagonalize, set_geo_opt_params, set_smearing_params
+from cp2k_system_params import set_system_specific_params
+
+eps = 1.0e-13
+
+class CP2k_init(object):
+    
+    def __init__(self, project_name, atoms):
+        #===============================================================================
+        # Setup directories and mpi. You can setup the cp2k command (cp2k by default)
+        # with calc.cp2k_command, and the mpi command (mpirun by default) with
+        # calc.mpi_command. The input/output flag for cp2k is automatically set by
+        # specifying calc.input_path/calc.output_path. MPI can be turned on or off with
+        # calc.mpi_on (on by default). The -n flag can be setup with
+        # calc.mpi_n_processes. Any special flags can be specified by using
+        # calc.cp2k_flags or calc.mpi_flags.
+        self.calc = CP2K()
+        self.calc.project_name = project_name
+        self.calc.working_directory = "."
+        self.calc.mpi_on = True
+
+        #===============================================================================
+        # Create shortcuts for the most used subtrees of the input. You don't have to
+        # specify these but they will make your life easier.
+        self.CP2K_INPUT = self.calc.CP2K_INPUT  # This is the root of the input tree
+        self.GLOBAL = self.CP2K_INPUT.GLOBAL
+        self.FORCE_EVAL = self.CP2K_INPUT.FORCE_EVAL_add()  # Repeatable items are added like this
+        self.SUBSYS = self.FORCE_EVAL.SUBSYS
+        self.DFT = self.FORCE_EVAL.DFT
+        self.SCF = self.DFT.SCF
+        
+        #===============================================================================
+        # Fill input tree. Section names are in upper case, keywords are capitalized.
+        self.GLOBAL.Print_level = "MEDIUM"
+        
+        # Load good generic parameters from a separate file
+        set_common_params_diagonalize(self.GLOBAL, self.FORCE_EVAL, self.DFT, self.SCF)
+        set_smearing_params(self.SCF)
+        
+        # Create coordinates of the atoms and the unit cell based on the ASE Atoms object
+        # atoms. Also choose reasonable Poisson solver for the setup.
+        self.atoms = atoms
+        self.calc.create_cell(self.SUBSYS, self.atoms)
+        self.calc.create_coord(self.SUBSYS, self.atoms)
+        set_poisson_solver(self.DFT, self.atoms)
+        
+        # Set system specific parameters from a separate file
+        set_system_specific_params(self.DFT, self.SCF, self.SUBSYS)
+    
+    
+    def init_desc_tip(self, V=0.0, E_per_V=None):
+        self.GLOBAL.Run_type = "GEO_OPT"
+        self.SCF.Scf_guess = "RESTART"
+        
+        if abs(V) > eps:
+            if E_per_V is None:
+                self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
+                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+            else:
+                self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
+                self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
+                self.DFT.EXTERNAL_POTENTIAL.Values = "[eV] {} [angstrom] 1.0".format(V*E_per_V)
+        
+        if self.GLOBAL.Run_type == "GEO_OPT":
+            self.MOTION = self.CP2K_INPUT.MOTION
+            set_fixed_atoms_ASE(self.MOTION, self.atoms)
+            set_geo_opt_params(self.MOTION, self.DFT)
+        
+        return self.calc
+    
+    
+    def init_tune_bias(self, V, E_per_V=None):
+        self.GLOBAL.Run_type = "GEO_OPT"
+        self.SCF.Scf_guess = "RESTART"
+        
+        if E_per_V is None:
+            self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
+            self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+        else:
+            self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
+            self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
+            self.DFT.EXTERNAL_POTENTIAL.Values = "[eV] {} [angstrom] 1.0".format(V*E_per_V)
+        
+        if self.GLOBAL.Run_type == "GEO_OPT":
+            self.MOTION = self.CP2K_INPUT.MOTION
+            set_fixed_atoms_ASE(self.MOTION, self.atoms)
+            set_geo_opt_params(self.MOTION, self.DFT)
+        
+        return self.calc
+    
+    
+    def init_calc_energy(self):
+        self.GLOBAL.Run_type = "ENERGY"
+        self.SCF.Scf_guess = "ATOMIC"
+        
+        return self.calc
+
+
+    def init_geometry_optimization(self):
+        self.GLOBAL.Run_type = "GEO_OPT"
+        self.SCF.Scf_guess = "ATOMIC"
+        self.MOTION = self.CP2K_INPUT.MOTION
+        set_fixed_atoms_ASE(self.MOTION, self.atoms)
+        set_geo_opt_params(self.MOTION, self.DFT)
+        
+        return self.calc
+    
+    
+    def init_calc_forces(self, V=None, E_per_V=None):
+        self.GLOBAL.Run_type = "ENERGY_FORCE"
+        self.SCF.Scf_guess = "RESTART"
+        
+        if V is not None:
+            if E_per_V is None:
+                self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
+                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+            else:
+                self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
+                self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
+                self.DFT.EXTERNAL_POTENTIAL.Values = "[eV] {} [angstrom] 1.0".format(V*E_per_V)
+        
+        return self.calc
+    
+    
+    def init_calc_potential(self, V=None, external_pot=False, E_per_V=None):
+        self.GLOBAL.Run_type = "ENERGY"
+        self.SCF.Scf_guess = "RESTART"
+        
+        if V is not None:
+            if E_per_V is None:
+                self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
+                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+            else:
+                self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
+                self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
+                self.DFT.EXTERNAL_POTENTIAL.Values = "[eV] {} [angstrom] 1.0".format(V*E_per_V)
+        
+        # Printing the electric field gives faulty result probably
+        # due to the xz-periodic boundary condition
+        #self.DFT.PRINT.EFIELD_CUBE.Section_parameters = "MEDIUM"
+        self.DFT.PRINT.V_HARTREE_CUBE.Section_parameters = "MEDIUM"
+        if external_pot:
+            self.DFT.PRINT.EXTERNAL_POTENTIAL_CUBE.Section_parameters = "MEDIUM"
+        
+        return self.calc
+    
+    
+    def init_calc_potential_relax(self, V=None, external_pot=False, E_per_V=None):
+        self.GLOBAL.Run_type = "GEO_OPT"
+        self.SCF.Scf_guess = "ATOMIC"
+        
+        if V is not None:
+            if E_per_V is None:
+                self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
+                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+            else:
+                self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
+                self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
+                self.DFT.EXTERNAL_POTENTIAL.Values = "[eV] {} [angstrom] 1.0".format(V*E_per_V)
+        
+        if self.GLOBAL.Run_type == "GEO_OPT":
+            self.MOTION = self.CP2K_INPUT.MOTION
+            set_fixed_atoms_ASE(self.MOTION, self.atoms)
+            set_geo_opt_params(self.MOTION, self.DFT)
+        
+        self.DFT.PRINT.V_HARTREE_CUBE.Section_parameters = "MEDIUM"
+        self.DFT.PRINT.V_HARTREE_CUBE.Add_last = "NUMERIC"
+        self.DFT.PRINT.V_HARTREE_CUBE.EACH.Geo_opt = 0
+        if external_pot:
+            self.DFT.PRINT.EXTERNAL_POTENTIAL_CUBE.Section_parameters = "MEDIUM"
+            self.DFT.PRINT.EXTERNAL_POTENTIAL_CUBE.Add_last = "NUMERIC"
+            self.DFT.PRINT.EXTERNAL_POTENTIAL_CUBE.EACH.Geo_opt = 0
+        
+        return self.calc
+
+
+def init_cp2k_restart(project_name, restart_file):
+    calc = CP2K_restart()
+    calc.project_name = project_name
+    calc.working_directory = "."
+    calc.restart_file = restart_file
+    calc.cp2k_command = "srun cp2k.popt"
+    
+    return calc
