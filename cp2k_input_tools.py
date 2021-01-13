@@ -34,11 +34,16 @@ def set_poisson_solver(DFT, atoms):
    
    if pbc[0] and pbc[1] and pbc[2]:
       solver = "PERIODIC"
+   #elif pbc[0] and pbc[1]:
+   #  solver = "WAVELET"
    elif pbc[0] and pbc[2]:
       solver = "WAVELET"
+   #elif pbc[1] and pbc[2]:
+   #   solver = "WAVELET"
    elif not(pbc[0]) and not(pbc[1]) and not(pbc[2]):
       solver = "WAVELET"
    else:
+      print('still working only fully periodic, non-peridic or XZ periodic ')
       sys.exit('No poisson solver in CP2k for these periodic boundary conditions!\n')
 
    DFT.POISSON.Periodic = periodic_str

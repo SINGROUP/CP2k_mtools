@@ -30,7 +30,7 @@ def get_charges_from_output(output):
     charges = []
     
     for line_index, line in enumerate(output_lines):
-        if "MULLIKEN POPULATION ANALYSIS" in line:
+        if "Mulliken Population Analysis" in line:
             mulliken_section_begin = line_index
         elif "# Total charge" in line:
             mulliken_section_end = line_index

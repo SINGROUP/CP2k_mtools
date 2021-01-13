@@ -21,14 +21,14 @@ def get_grid_size(cell_vectors, cutoff, use_extended_fft_lengths=False):
     for dim in range(3):
         cell_vector_len = np.sqrt(cell_vectors[dim, :].dot(cell_vectors[dim, :]))*angstrom_to_bohr
         n_grid[dim] = 2*int(cell_vector_len*np.sqrt(0.5*cutoff_au)/np.pi)+1
-        print 'points in dim {}: {}'.format(dim, n_grid[dim])
+        print('points in dim {}: {}'.format(dim, n_grid[dim]))
         for test_n in allowed_n:
             if test_n >= n_grid[dim]:
                 n_grid[dim] = test_n
-                print 'points in dim {} (for FFT): {}'.format(dim, n_grid[dim])
+                print('points in dim {} (for FFT): {}'.format(dim, n_grid[dim]))
                 break
     
-    print ''
+    print('')
     return n_grid
 
 

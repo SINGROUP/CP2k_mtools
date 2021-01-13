@@ -35,13 +35,14 @@ class CP2k_init(object):
         self.SUBSYS = self.FORCE_EVAL.SUBSYS
         self.DFT = self.FORCE_EVAL.DFT
         self.SCF = self.DFT.SCF
+        self.VDW = self.DFT.XC.VDW_POTENTIAL
         
         #===============================================================================
         # Fill input tree. Section names are in upper case, keywords are capitalized.
         self.GLOBAL.Print_level = "MEDIUM"
         
         # Load good generic parameters from a separate file
-        set_common_params_diagonalize(self.GLOBAL, self.FORCE_EVAL, self.DFT, self.SCF)
+        set_common_params_diagonalize(self.GLOBAL, self.FORCE_EVAL, self.DFT, self.SCF, self.VDW)
         set_smearing_params(self.SCF)
         
         # Create coordinates of the atoms and the unit cell based on the ASE Atoms object
@@ -54,6 +55,9 @@ class CP2k_init(object):
         # Set system specific parameters from a separate file
         set_system_specific_params(self.DFT, self.SCF, self.SUBSYS)
     
+    # just copied from restart and not working
+    def get_output_path(self):
+            return self.working_directory + "/" + self.project_name + ".out"    
     
     def init_desc_tip(self, V=0.0, E_per_V=None):
         self.GLOBAL.Run_type = "GEO_OPT"

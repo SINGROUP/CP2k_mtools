@@ -27,11 +27,11 @@ class CP2K_restart:
         restart_file = self.get_restart_file_path()
         command_string = self.cp2k_command + " -i {}".format(restart_file) + \
                             " -o {}".format(output_file)
-        print ">> Running CP2K (restarting from previous calculation):"
-        print "   -CP2K command: {}".format(command_string)
+        print(">> Running CP2K (restarting from previous calculation):")
+        print("   -CP2K command: {}".format(command_string))
         try:
             check_output(command_string, shell=True, cwd=self.working_directory)
         except CalledProcessError:
-            print "Error occured during CP2K calculation."
+            print("Error occured during CP2K calculation.")
             raise
-        print ">> CP2K calculation finished succesfully!"
+        print(">> CP2K calculation finished succesfully!")
