@@ -32,12 +32,13 @@ def set_poisson_solver(DFT, atoms):
    if len(periodic_str) == 0:
       periodic_str = "NONE"
    
+   print('Automatically adjusting the poisson solver -- PERIODIC for XYZ pbc, ANALYTIC for XZ pbc and WAVELET for non-pbc.')
    if pbc[0] and pbc[1] and pbc[2]:
       solver = "PERIODIC"
    #elif pbc[0] and pbc[1]:
    #  solver = "WAVELET"
    elif pbc[0] and pbc[2]:
-      solver = "WAVELET"
+      solver = "ANALYTIC"
    #elif pbc[1] and pbc[2]:
    #   solver = "WAVELET"
    elif not(pbc[0]) and not(pbc[1]) and not(pbc[2]):
