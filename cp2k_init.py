@@ -60,16 +60,16 @@ class CP2k_init(object):
     def get_output_path(self):
             return self.working_directory + "/" + self.project_name + ".out"    
     
-    def init_desc_tip(self, V=0.0, E_per_V=None):
+    def init_desc_tip(self, V=0.0, E_per_V=None, optWfield=False):
         print ("D: V, style_metallic", V, style_metallic)
         self.GLOBAL.Run_type = "GEO_OPT"
         self.SCF.Scf_guess = "RESTART"
         
         if abs(V) > eps:
             if E_per_V is None:
-                print("------ BEWARE OPTIMIZATION ALLOWED FOR NOW !!!!!  ------")
-                #if style_metallic: 
-                #    self.GLOBAL.Run_type = "Energy"
+                print("Optimization allowed, if: ", optWfield)
+                if (style_metallic) and (not optWfield): 
+                    self.GLOBAL.Run_type = "Energy"
                 self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
                 self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
             else:
