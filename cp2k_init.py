@@ -71,7 +71,7 @@ class CP2k_init(object):
                 if (style_metallic) and (not optWfield): 
                     self.GLOBAL.Run_type = "Energy"
                 self.DFT.EXTERNAL_POTENTIAL.Read_from_cube = "TRUE"
-                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V
+                self.DFT.EXTERNAL_POTENTIAL.Scaling_factor = V if V < 200.0 else 0.0
             else:
                 self.DFT.EXTERNAL_POTENTIAL.Function = "(A/B)*Y"
                 self.DFT.EXTERNAL_POTENTIAL.Parameters = "A B"
