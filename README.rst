@@ -9,14 +9,14 @@ This Python package is intended to help running multiple CP2k calculations for t
 Requirements
 ------------
 
-- Python 2.7
+- Python 3.X (originally 2.7)
 - Atomic Simulation Environment (ASE), `https://wiki.fysik.dtu.dk/ase/ <https://wiki.fysik.dtu.dk/ase/>`_
 - pycp2k, `https://github.com/SINGROUP/pycp2k <https://github.com/SINGROUP/pycp2k>`_
 
 Installation
 ------------
 
-Put this directory containing the Python modules to your ``PYTHONPATH`` environment variable. Create file ``cp2k_common_params.py`` based on the file template in ``parameter_file_templates`` folder and place it to a directory that fits the scope in which you want to use those parameters (for example the root directory of a set of simulations). Make sure that directory is also in your ``PYTHONPATH``.
+Put this directory containing the Python modules to your ``PYTHONPATH`` environment variable. Create file ``cp2k_common_params.py`` based on the file templates in ``parameter_file_templates`` folder and place it to a directory that fits the scope in which you want to use those parameters (for example the root directory of a set of simulations). There are actually 2 sets of parameters the original one - used for NaCl systems - and more recent one called ``style_metallic`` - used for systems of organics on metallic substrates and CO-metallic tips - which has to be renamed to the original form, before usage. Make sure that directory is also in your ``PYTHONPATH``.
 
 Usage
 -----
@@ -50,3 +50,5 @@ Author
 Juha Ritala (2016)
 `jritala@gmail.com <mailto:jritala@gmail.com>`_
 
+Ondrej Krejci (2022)
+`ondrej.krejci@aalto.fi <mailto:ondrej.krejci@aalto.fi>`_

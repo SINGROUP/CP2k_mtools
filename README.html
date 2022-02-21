@@ -57,7 +57,7 @@ This Python package is intended to help running multiple CP2k calculations for t
 
 <p>
 <ul>
-<li>Python 2.7</li>
+<li>Python 3.X (originally 2.7)</li>
 <li>Atomic Simulation Environment (ASE), <a href="https://wiki.fysik.dtu.dk/ase/" title="https://wiki.fysik.dtu.dk/ase/" class="https">https://wiki.fysik.dtu.dk/ase/</a></li>
 <li>pycp2k, <a href="https://github.com/SINGROUP/pycp2k" title="https://github.com/SINGROUP/pycp2k" class="https">https://github.com/SINGROUP/pycp2k</a></li>
 </ul>
@@ -68,7 +68,7 @@ This Python package is intended to help running multiple CP2k calculations for t
 <br>
 
 <p>
-Put this directory containing the Python modules to your <tt>PYTHONPATH</tt> environment variable. Create file <tt>cp2k_common_params.py</tt> based on the file template in <tt>parameter_file_templates</tt> folder and place it to a directory that fits the scope in which you want to use those parameters (for example the root directory of a set of simulations). Make sure that directory is also in your <tt>PYTHONPATH</tt>.
+Put this directory containing the Python modules to your <code>PYTHONPATH</code> environment variable. Create file <code>cp2k_common_params.py</code> based on the file templates in <code>parameter_file_templates</code> folder and place it to a directory that fits the scope in which you want to use those parameters (for example the root directory of a set of simulations). There are actually 2 sets of parameters the original one - used for NaCl systems - and more recent one called <code>style_metallic</code> - used for systems of organics on metallic substrates and CO-metallic tips - which has to be renamed to the original form, before usage. Make sure that directory is also in your <code>PYTHONPATH</code>.
 </p>
 
 <h2>Usage</h2>
@@ -124,6 +124,10 @@ Juha Ritala (2016)<br>
 <a href="mailto:jritala@gmail.com" title="jritala@gmail.com" class="mailto">jritala@gmail.com</a>
 </p>
 
+<p>
+Ondrej Krejci (2022)<br>
+<a href="mailto:ondrej.krejci@aalto.fi">ondrej.krejci@aalto.fi</a>
+</p>
 
 <!-- End wiki content -->
 
